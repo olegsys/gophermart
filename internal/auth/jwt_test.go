@@ -6,7 +6,21 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestGenerateAndParseToken(t *testing.T) {
+	secret := "test-secret"
+	userID := int64(123)
+
+	tokenStr, err := GenerateToken(userID, secret)
+	require.NoError(t, err)
+	assert.NotEmpty(t, tokenStr)
+
+	claims, err := ParseToken(tokenStr, secret)
+	require.NoError(t, err)
+	assert.Equal(t, userID, claims.UserID)
+}
 
 func TestParseToken_Table(t *testing.T) {
 	secret := "my-secure-secret-key"
@@ -14,7 +28,7 @@ func TestParseToken_Table(t *testing.T) {
 	userID := int64(100500)
 
 	validToken, err := GenerateToken(userID, secret)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expiredClaims := Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -24,7 +38,7 @@ func TestParseToken_Table(t *testing.T) {
 	}
 	expiredTokenObj := jwt.NewWithClaims(jwt.SigningMethodHS256, expiredClaims)
 	expiredToken, err := expiredTokenObj.SignedString([]byte(secret))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	tests := []struct {
 		name           string
